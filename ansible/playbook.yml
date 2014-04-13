@@ -1,0 +1,7 @@
+---
+
+- name: Provision vm
+  hosts: all
+
+  roles:
+    - vagrant

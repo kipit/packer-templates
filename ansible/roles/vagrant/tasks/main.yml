@@ -1,0 +1,27 @@
+---
+
+- name: Fix root password for vagrant
+  user: name=root password="$6$rounds=100000$84WdFoPcJ2yxoR35$fSFvDxfXV/Ez3KIcmOXvf/Iu2D5Q7PO3c9..kEVR.ebYGyb2L129jvIzdKQ.fVd0jM3LGmI93bJugP0Ip4tEI/"
+
+- name: Ensure vagrant user exists
+  user: name=vagrant password="$6$rounds=100000$84WdFoPcJ2yxoR35$fSFvDxfXV/Ez3KIcmOXvf/Iu2D5Q7PO3c9..kEVR.ebYGyb2L129jvIzdKQ.fVd0jM3LGmI93bJugP0Ip4tEI/" shell="/bin/bash"
+
+- name: Ensure sudo is installed
+  apt: pkg=sudo state=latest
+
+- name: Ensure vagrant user can use sudo
+  copy: src=vagrant.sudo dest=/etc/sudoers.d/vagrant owner=root group=root mode=0440 validate='visudo -cf %s'
+
+- name: Ensure name ssh server don't use DNS
+  lineinfile: dest=/etc/ssh/sshd_config regexp=^UseDNS\s line="UseDNS no"
+
+- name: Ensure vagrant user accept vagrant key
+  authorized_key: user=vagrant key="{{ lookup('file', 'vagrant.pub') }}"
+
+- name: Ensure grub has no timeout
+  lineinfile: dest=/etc/default/grub regexp=^GRUB_TIMEOUT= line=GRUB_TIMEOUT=0
+  notify:
+    - Update grub
+
+- name: Ensure vim is installed
+  apt: pkg=vim-nox state=latest
